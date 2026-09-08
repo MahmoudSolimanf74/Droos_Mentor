@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../theme/text_styles.dart';
 
@@ -9,6 +9,7 @@ class KpiCard extends StatelessWidget {
   final IconData? icon;
   final Color? color;
   final Color? iconColor;
+  final EdgeInsetsGeometry? padding;
   final VoidCallback? onTap;
 
   const KpiCard({
@@ -19,6 +20,7 @@ class KpiCard extends StatelessWidget {
     this.icon,
     this.color,
     this.iconColor,
+    this.padding,
     this.onTap,
   });
 
@@ -30,7 +32,7 @@ class KpiCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        padding: padding ?? const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.card,
           borderRadius: BorderRadius.circular(12),
@@ -41,9 +43,9 @@ class KpiCard extends StatelessWidget {
           children: [
             // Right vertical colored indicator stripe
             Positioned(
-              top: -18,
-              bottom: -18,
-              right: -20,
+              top: -12,
+              bottom: -12,
+              right: -14,
               width: 4,
               child: Container(
                 decoration: BoxDecoration(
@@ -58,30 +60,43 @@ class KpiCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      title,
-                      style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    if (icon != null)
+                    if (icon != null) ...[
+                      const SizedBox(width: 4),
                       Icon(icon, size: 16, color: effectiveColor.withValues(alpha: 0.7)),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  value,
-                  style: AppTextStyles.monoStat.copyWith(
-                    color: effectiveColor,
+                const SizedBox(height: 6),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    value,
+                    style: AppTextStyles.monoStat.copyWith(
+                      fontSize: 22,
+                      color: effectiveColor,
+                    ),
                   ),
                 ),
                 if (subtitle != null) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle!,
                     style: AppTextStyles.bodySmall.copyWith(color: AppColors.textFaint),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ],

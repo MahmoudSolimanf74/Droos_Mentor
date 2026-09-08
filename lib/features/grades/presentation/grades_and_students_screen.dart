@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/text_styles.dart';
+import '../../../core/utils/whatsapp_helper.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../students/domain/student_model.dart';
@@ -567,6 +568,17 @@ class _GradesAndStudentsScreenState extends State<GradesAndStudentsScreen> {
                           ),
                         ],
                       ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18, color: AppColors.green),
+                      tooltip: 'مشاركة التقرير عبر واتساب لولي الأمر',
+                      onPressed: () {
+                        WhatsAppHelper.shareStudentReport(
+                          context: context,
+                          student: s,
+                          groupName: group.name,
+                        );
+                      },
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.red),

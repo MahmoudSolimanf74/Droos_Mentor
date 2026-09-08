@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/phone_validator.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 
@@ -106,6 +108,7 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
               ),
               const SizedBox(height: 14),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: CustomTextField(
@@ -114,6 +117,12 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                       hintText: '010XXXXXXXX',
                       prefixIcon: Icons.phone_outlined,
                       keyboardType: TextInputType.phone,
+                      maxLength: 11,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(11),
+                      ],
+                      validator: (val) => PhoneValidator.validateEgyptianPhone(val),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -124,6 +133,12 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                       hintText: '011XXXXXXXX',
                       prefixIcon: Icons.contact_phone_outlined,
                       keyboardType: TextInputType.phone,
+                      maxLength: 11,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(11),
+                      ],
+                      validator: (val) => PhoneValidator.validateEgyptianPhone(val),
                     ),
                   ),
                 ],

@@ -479,25 +479,53 @@ class StudentsRepositoryImpl implements StudentsRepository {
     if (client == null) return [];
 
     try {
-      final records = await client
-          .from('exam_attempts')
-          .select('*, exams(title)')
-          .eq('student_id', studentId);
+      final idsToSearch = <String>{studentId};
+      try {
+        final s = await client.from('students').select('id, user_id, profile_id').eq('id', studentId).maybeSingle();
+        if (s != null) {
+          if (s['user_id'] != null) idsToSearch.add(s['user_id'].toString());
+          if (s['profile_id'] != null) idsToSearch.add(s['profile_id'].toString());
+        }
+      } catch (_) {}
 
-      return (records as List<dynamic>).map((r) {
+      List<dynamic> records = [];
+      try {
+        final r = await client
+            .from('exam_attempts')
+            .select('*, exams(title, duration_minutes)')
+            .inFilter('student_id', idsToSearch.toList())
+            .order('submitted_at', ascending: false);
+        records = r as List<dynamic>;
+      } catch (_) {
+        final r = await client
+            .from('exam_attempts')
+            .select('*')
+            .inFilter('student_id', idsToSearch.toList())
+            .order('submitted_at', ascending: false);
+        records = r as List<dynamic>;
+      }
+
+      return records.map((r) {
         final exam = r['exams'] as Map<String, dynamic>?;
         final score = (r['score'] as num?)?.toDouble() ?? 0.0;
         final total = (r['total_score'] as num?)?.toDouble() ?? 100.0;
         return {
+          'id': r['id']?.toString() ?? '',
+          'exam_id': r['exam_id']?.toString() ?? '',
+          'student_id': r['student_id']?.toString() ?? studentId,
           'title': exam?['title'] ?? 'اختبار',
           'score': score,
           'total': total,
+          'total_score': total,
           'percentage': total > 0 ? (score / total) * 100 : 0,
+          'answers': r['answers'] ?? r['breakdown'],
+          'started_at': r['started_at'],
+          'submitted_at': r['submitted_at'],
         };
       }).toList();
     } catch (e) {
       debugPrint('[Supabase] getStudentExamAttempts error: $e');
-      rethrow;
+      return [];
     }
   }
 }

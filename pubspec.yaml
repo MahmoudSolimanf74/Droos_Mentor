@@ -53,6 +53,9 @@ dependencies:
   file_picker: ^8.1.7
   uuid: ^4.5.1
   shared_preferences: ^2.3.5
+  app_links: ^7.0.0
+  protocol_handler: ^0.2.0
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

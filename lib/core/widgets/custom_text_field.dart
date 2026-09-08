@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../constants/app_colors.dart';
 import '../theme/text_styles.dart';
 
@@ -17,6 +18,8 @@ class CustomTextField extends StatelessWidget {
   final VoidCallback? onTap;
   final String? initialValue;
   final TextDirection? textDirection;
+  final List<TextInputFormatter>? inputFormatters;
+  final int? maxLength;
 
   const CustomTextField({
     super.key,
@@ -34,6 +37,8 @@ class CustomTextField extends StatelessWidget {
     this.onTap,
     this.initialValue,
     this.textDirection,
+    this.inputFormatters,
+    this.maxLength,
   });
 
   @override
@@ -58,6 +63,8 @@ class CustomTextField extends StatelessWidget {
           obscureText: obscureText,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          maxLength: maxLength,
+          inputFormatters: inputFormatters,
           validator: validator,
           onChanged: onChanged,
           readOnly: readOnly,
@@ -66,6 +73,7 @@ class CustomTextField extends StatelessWidget {
           style: AppTextStyles.bodyLarge,
           decoration: InputDecoration(
             hintText: hintText,
+            counterText: '',
             prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 20, color: AppColors.textSecondary) : null,
             suffixIcon: suffixIcon,
           ),

@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/text_styles.dart';
+import '../../../core/utils/whatsapp_helper.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/kpi_card.dart';
 import '../../../core/widgets/status_badge.dart';
+import '../../exams/presentation/student_exam_review_screen.dart';
 import '../data/students_repository.dart';
 import '../domain/student_model.dart';
 import 'students_cubit.dart';
@@ -106,6 +108,14 @@ class _StudentDetailsScreenState extends State<StudentDetailsScreen> {
           title: Text(s.name, style: AppTextStyles.titleLarge),
           actions: [
             IconButton(
+              icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.green),
+              tooltip: 'مشاركة التقرير عبر واتساب',
+              onPressed: () => WhatsAppHelper.shareStudentReport(
+                context: context,
+                student: s,
+              ),
+            ),
+            IconButton(
               icon: const Icon(Icons.person_remove_outlined, color: AppColors.red),
               tooltip: AppStrings.removeStudent,
               onPressed: _removeStudent,
@@ -188,6 +198,24 @@ class _StudentDetailsScreenState extends State<StudentDetailsScreen> {
                         ],
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
+                      label: const Text('مشاركة تقرير المتابعة عبر واتساب لولي الأمر', style: TextStyle(fontWeight: FontWeight.w700)),
+                      onPressed: () => WhatsAppHelper.shareStudentReport(
+                        context: context,
+                        student: s,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -362,39 +390,69 @@ class _StudentDetailsScreenState extends State<StudentDetailsScreen> {
       itemBuilder: (ctx, i) {
         final item = _examAttempts[i];
         final score = (item['score'] as num?)?.toDouble() ?? 0.0;
-        final total = (item['total'] as num?)?.toDouble() ?? 100.0;
+        final total = (item['total'] as num?)?.toDouble() ?? (item['total_score'] as num?)?.toDouble() ?? 100.0;
         final pct = (item['percentage'] as num?)?.toDouble() ?? (total > 0 ? (score / total) * 100 : 0);
         final scoreColor = pct >= 80 ? AppColors.green : (pct >= 60 ? AppColors.yellow : AppColors.red);
 
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: AppColors.card,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: AppColors.border),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item['title'] as String? ?? 'اختبار',
-                    style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => StudentExamReviewScreen(
+                      attemptMap: {
+                        ...item,
+                        'student_name': _student?.name ?? 'طالب',
+                        'student_code': _student?.studentCode ?? 'STU-000',
+                      },
+                    ),
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    'الدرجة: ${score.toInt()}/${total.toInt()}',
-                    style: AppTextStyles.monoNumber.copyWith(color: scoreColor, fontWeight: FontWeight.w700),
-                  ),
-                ],
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item['title'] as String? ?? 'اختبار',
+                            style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'الدرجة: ${score.toInt()}/${total.toInt()}',
+                            style: AppTextStyles.monoNumber.copyWith(color: scoreColor, fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        StatusBadge(
+                          label: '${pct.toInt()}%',
+                          color: scoreColor,
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.chevron_left_rounded, size: 20, color: AppColors.textSecondary),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              StatusBadge(
-                label: '${pct.toInt()}%',
-                color: scoreColor,
-              ),
-            ],
+            ),
           ),
         );
       },

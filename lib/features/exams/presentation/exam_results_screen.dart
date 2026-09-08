@@ -9,6 +9,7 @@ import '../data/exams_repository.dart';
 import '../domain/exam_attempt_model.dart';
 import '../domain/exam_model.dart';
 import 'create_exam_manual_screen.dart';
+import 'student_exam_review_screen.dart';
 
 class ExamResultsScreen extends StatefulWidget {
   final String examId;
@@ -55,6 +56,18 @@ class _ExamResultsScreenState extends State<ExamResultsScreen> {
     } catch (_) {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _navigateToReview(ExamAttemptModel att) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StudentExamReviewScreen(
+          attempt: att,
+          exam: _exam,
+        ),
+      ),
+    );
   }
 
   void _showAttemptDetails(ExamAttemptModel att) {
@@ -135,9 +148,22 @@ class _ExamResultsScreenState extends State<ExamResultsScreen> {
                   Text(subTime, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               CustomButton(
-                text: 'إغلاق',
+                text: '📄 عرض ورقة إجابة الطالب وتصحيحها',
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _navigateToReview(att);
+                },
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 44),
+                  side: const BorderSide(color: AppColors.border),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('إغلاق', style: TextStyle(color: AppColors.textSecondary)),
                 onPressed: () => Navigator.pop(ctx),
               ),
             ],
@@ -278,7 +304,8 @@ class _ExamResultsScreenState extends State<ExamResultsScreen> {
                                 ),
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                                  onTap: () => _showAttemptDetails(att),
+                                  onTap: () => _navigateToReview(att),
+                                  onLongPress: () => _showAttemptDetails(att),
                                   leading: CircleAvatar(
                                     radius: 18,
                                     backgroundColor: scoreColor.withValues(alpha: 0.15),

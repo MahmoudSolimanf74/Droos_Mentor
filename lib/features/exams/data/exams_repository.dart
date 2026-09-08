@@ -314,6 +314,7 @@ class ExamsRepositoryImpl implements ExamsRepository {
           totalScore: (a['total_score'] as num?)?.toDouble() ?? 100.0,
           startedAt: DateTime.tryParse(a['started_at']?.toString() ?? '') ?? DateTime.now(),
           submittedAt: DateTime.tryParse(a['submitted_at']?.toString() ?? '') ?? DateTime.now(),
+          answers: a['answers'] ?? a['breakdown'],
         );
       }).toList();
 

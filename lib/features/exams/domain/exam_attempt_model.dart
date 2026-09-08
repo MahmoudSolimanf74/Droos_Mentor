@@ -11,6 +11,7 @@ class ExamAttemptModel extends Equatable {
   final DateTime startedAt;
   final DateTime? submittedAt;
   final bool isOfficial;
+  final dynamic answers;
 
   const ExamAttemptModel({
     required this.id,
@@ -23,6 +24,7 @@ class ExamAttemptModel extends Equatable {
     required this.startedAt,
     this.submittedAt,
     this.isOfficial = true,
+    this.answers,
   });
 
   double get percentage => totalScore > 0 ? (score / totalScore) * 100 : 0.0;
@@ -43,6 +45,7 @@ class ExamAttemptModel extends Equatable {
           ? DateTime.tryParse(json['submitted_at'].toString())
           : null,
       isOfficial: json['is_official'] as bool? ?? true,
+      answers: json['answers'] ?? json['breakdown'],
     );
   }
 
@@ -55,6 +58,7 @@ class ExamAttemptModel extends Equatable {
         'started_at': startedAt.toIso8601String(),
         'submitted_at': submittedAt?.toIso8601String(),
         'is_official': isOfficial,
+        'answers': answers,
       };
 
   @override
@@ -69,5 +73,6 @@ class ExamAttemptModel extends Equatable {
         startedAt,
         submittedAt,
         isOfficial,
+        answers,
       ];
 }

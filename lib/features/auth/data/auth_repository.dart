@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../../../core/config/supabase_config.dart';
@@ -115,14 +114,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     try {
-      String? redirectUrl;
-      if (kIsWeb) {
-        redirectUrl = null;
-      } else if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
-        redirectUrl = null;
-      } else {
-        redirectUrl = 'io.supabase.teacher://login-callback';
-      }
+      final redirectUrl = kIsWeb ? Uri.base.origin : 'io.supabase.teacher://login-callback';
 
       await client.auth.signInWithOAuth(
         sb.OAuthProvider.google,

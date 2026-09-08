@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/router/route_names.dart';
 import '../../../core/theme/text_styles.dart';
+import '../../../core/utils/whatsapp_helper.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
@@ -271,11 +272,18 @@ class _StudentsTabViewState extends State<StudentsTabView> {
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
-                                              if (student.phone != null) ...[
+                                              if (student.phone != null && student.phone!.isNotEmpty) ...[
                                                 const SizedBox(width: 8),
                                                 Text(
                                                   '•  ${student.phone}',
                                                   style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                                                ),
+                                              ],
+                                              if (student.parentPhone != null && student.parentPhone!.isNotEmpty) ...[
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  '•  ولي الأمر: ${student.parentPhone}',
+                                                  style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.textSecondary),
                                                 ),
                                               ],
                                             ],
@@ -325,6 +333,16 @@ class _StudentsTabViewState extends State<StudentsTabView> {
                                       ),
                                     ),
 
+                                    // WhatsApp Quick Share
+                                    IconButton(
+                                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20, color: AppColors.green),
+                                      tooltip: 'مشاركة التقرير عبر واتساب لولي الأمر',
+                                      onPressed: () => WhatsAppHelper.shareStudentReport(
+                                        context: context,
+                                        student: student,
+                                      ),
+                                    ),
+
                                     // Action Menu
                                     PopupMenuButton<String>(
                                       icon: const Icon(Icons.more_vert, size: 18, color: AppColors.textSecondary),
@@ -336,6 +354,11 @@ class _StudentsTabViewState extends State<StudentsTabView> {
                                               'groupId': widget.groupId,
                                               'studentId': student.id,
                                             },
+                                          );
+                                        } else if (val == 'whatsapp') {
+                                          WhatsAppHelper.shareStudentReport(
+                                            context: context,
+                                            student: student,
                                           );
                                         } else if (val == 'remove') {
                                           _confirmRemoveStudent(student);
@@ -349,6 +372,16 @@ class _StudentsTabViewState extends State<StudentsTabView> {
                                               Icon(Icons.visibility_outlined, size: 18),
                                               SizedBox(width: 8),
                                               Text(AppStrings.viewDetails),
+                                            ],
+                                          ),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'whatsapp',
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.chat_bubble_outline_rounded, size: 18, color: AppColors.green),
+                                              SizedBox(width: 8),
+                                              Text('تقرير واتساب لولي الأمر', style: TextStyle(color: AppColors.green)),
                                             ],
                                           ),
                                         ),

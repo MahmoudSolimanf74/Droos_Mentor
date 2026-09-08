@@ -1,7 +1,9 @@
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/config/app_config.dart';
+import 'core/config/supabase_config.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/attendance/data/attendance_repository.dart';
@@ -59,6 +61,31 @@ class _ClassPilotTeacherAppState extends State<ClassPilotTeacherApp> {
 
     _authCubit = AuthCubit(_authRepository);
     _appRouter = AppRouter(_authCubit);
+
+    _initAppLinks();
+  }
+
+  void _initAppLinks() async {
+    final appLinks = AppLinks();
+    appLinks.uriLinkStream.listen((uri) async {
+      debugPrint('[AppLinks Teacher] Incoming URI: $uri');
+      if (uri.scheme == 'io.supabase.teacher' || uri.host == 'login-callback') {
+        try {
+          await SupabaseConfig.client?.auth.getSessionFromUrl(uri);
+          _authCubit.checkAuthStatus();
+        } catch (e) {
+          debugPrint('[AppLinks Teacher] getSessionFromUrl error: $e');
+        }
+      }
+    });
+
+    try {
+      final initialUri = await appLinks.getInitialLink();
+      if (initialUri != null && (initialUri.scheme == 'io.supabase.teacher' || initialUri.host == 'login-callback')) {
+        await SupabaseConfig.client?.auth.getSessionFromUrl(initialUri);
+        _authCubit.checkAuthStatus();
+      }
+    } catch (_) {}
   }
 
   @override
