@@ -114,7 +114,12 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     try {
-      final redirectUrl = kIsWeb ? Uri.base.origin : 'io.supabase.teacher://login-callback';
+      final origin = kIsWeb ? Uri.base.origin.toLowerCase() : '';
+      final redirectUrl = kIsWeb
+          ? (origin.contains('localhost')
+              ? origin
+              : '$origin/Droos_Mentor/')
+          : 'io.supabase.teacher://login-callback';
 
       await client.auth.signInWithOAuth(
         sb.OAuthProvider.google,
