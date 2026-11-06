@@ -17,9 +17,22 @@ void main() async {
     }
   }
 
-  // Load saved config & attempt Supabase initialization (or initialize in demo mode)
+  // Load saved config & attempt Supabase initialization
   await SupabaseConfig.loadConfig();
   await SupabaseConfig.initialize();
+
+  // On Web: capture OAuth callback from URL parameters if present
+  if (kIsWeb) {
+    try {
+      final uri = Uri.base;
+      if (uri.fragment.contains('access_token') || uri.queryParameters.containsKey('code')) {
+        debugPrint('[Web OAuth Callback] Processing tokens from URL: $uri');
+        await SupabaseConfig.client?.auth.getSessionFromUrl(uri);
+      }
+    } catch (e) {
+      debugPrint('[Web OAuth Callback] getSessionFromUrl error: $e');
+    }
+  }
 
   runApp(const ClassPilotTeacherApp());
 }

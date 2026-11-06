@@ -1,11 +1,9 @@
-﻿import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/material.dart';
 import '../../../core/config/supabase_config.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/text_styles.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
-import '../../auth/presentation/auth_cubit.dart';
 
 class SupabaseSetupScreen extends StatefulWidget {
   const SupabaseSetupScreen({super.key});
@@ -66,20 +64,6 @@ class _SupabaseSetupScreenState extends State<SupabaseSetupScreen> {
             ? 'تم الاتصال بقاعدة بيانات Supabase بنجاح!'
             : 'فشل الاتصال، يرجى التحقق من الرابط والمفتاح والتأكد من إتاحة الإنترنت';
       });
-    }
-  }
-
-  Future<void> _enableDemoMode() async {
-    await SupabaseConfig.enableDemoMode();
-    if (mounted) {
-      context.read<AuthCubit>().signInDemoMode();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تم تفعيل وضع المعاينة (Demo Mode) بالبيانات المحلية'),
-          backgroundColor: AppColors.primary,
-        ),
-      );
-      Navigator.of(context).pop();
     }
   }
 
@@ -221,42 +205,6 @@ class _SupabaseSetupScreenState extends State<SupabaseSetupScreen> {
                     isFullWidth: true,
                     isLoading: _isConnecting,
                     onPressed: _connectSupabase,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Demo Mode fallback box
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: AppColors.card,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'العمل بدون اتصال (Offline Demo)',
-                    style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'إذا لم تكن قد أنشأت مشروع Supabase بعد أو لا يتوفر إنترنت، يمكنك التبديل إلى وضع المعاينة التجريبي بضغطة زر واحدة.',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 14),
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.play_circle_outline, size: 18),
-                    label: const Text('التبديل إلى وضع المعاينة (Demo Mode)'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.yellow,
-                      side: BorderSide(color: AppColors.yellow.withValues(alpha: 0.5)),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                    onPressed: _enableDemoMode,
                   ),
                 ],
               ),

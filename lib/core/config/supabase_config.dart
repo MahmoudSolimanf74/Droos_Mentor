@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -16,12 +17,11 @@ class SupabaseConfig {
   static String _currentUrl = defaultUrl;
   static String _currentAnonKey = defaultAnonKey;
   static bool _isInitialized = false;
-  static bool _isDemoMode = false; // Live mode by default with project keys
 
   static String get currentUrl => _currentUrl;
   static String get currentAnonKey => _currentAnonKey;
   static bool get isInitialized => _isInitialized;
-  static bool get isDemoMode => _isDemoMode;
+  static bool get isDemoMode => false; // Demo mode completely disabled
 
   static SupabaseClient? get client {
     if (_isInitialized) {
@@ -36,31 +36,23 @@ class SupabaseConfig {
 
   static Future<void> loadConfig() async {
     final prefs = await SharedPreferences.getInstance();
+    // Purge any saved demo mode flag
+    await prefs.remove(_prefDemoModeKey);
     _currentUrl = prefs.getString(_prefUrlKey) ?? defaultUrl;
     _currentAnonKey = prefs.getString(_prefAnonKey) ?? defaultAnonKey;
-    _isDemoMode = prefs.getBool(_prefDemoModeKey) ?? false;
   }
 
   static Future<bool> initialize({String? url, String? anonKey, bool? demoMode}) async {
     final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_prefDemoModeKey);
 
-    if (url != null) {
+    if (url != null && url.isNotEmpty) {
       _currentUrl = url;
       await prefs.setString(_prefUrlKey, url);
     }
-    if (anonKey != null) {
+    if (anonKey != null && anonKey.isNotEmpty) {
       _currentAnonKey = anonKey;
       await prefs.setString(_prefAnonKey, anonKey);
-    }
-    if (demoMode != null) {
-      _isDemoMode = demoMode;
-      await prefs.setBool(_prefDemoModeKey, demoMode);
-    }
-
-    if (_isDemoMode || _currentUrl.isEmpty) {
-      _isDemoMode = true;
-      _isInitialized = false;
-      return true;
     }
 
     try {
@@ -71,27 +63,21 @@ class SupabaseConfig {
         anonKey: _currentAnonKey,
       );
       _isInitialized = true;
-      _isDemoMode = false;
-      await prefs.setBool(_prefDemoModeKey, false);
       return true;
     } catch (e) {
-      // Fallback to demo mode if connection fails
+      debugPrint('[Supabase] Initialization error: $e');
       _isInitialized = false;
-      _isDemoMode = true;
       return false;
     }
   }
 
   static Future<void> enableDemoMode() async {
-    _isDemoMode = true;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_prefDemoModeKey, true);
+    // No-op: Demo mode completely removed
   }
 
   static Future<void> disableDemoMode() async {
-    _isDemoMode = false;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_prefDemoModeKey, false);
+    await prefs.remove(_prefDemoModeKey);
     await initialize();
   }
 }

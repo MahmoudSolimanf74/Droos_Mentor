@@ -96,7 +96,7 @@ class AuthCubit extends Cubit<AuthState> {
     } on RoleUnauthorizedException catch (e) {
       emit(AuthRoleUnauthorized(e.message));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError(e.toString().replaceAll('AuthException: ', '')));
     }
   }
 
@@ -119,16 +119,6 @@ class AuthCubit extends Cubit<AuthState> {
       emit(Authenticated(user));
     } on RoleUnauthorizedException catch (e) {
       emit(AuthRoleUnauthorized(e.message));
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
-  }
-
-  Future<void> signInDemoMode() async {
-    emit(AuthLoading());
-    try {
-      final user = await _authRepository.signInDemoMode();
-      emit(Authenticated(user));
     } catch (e) {
       emit(AuthError(e.toString()));
     }

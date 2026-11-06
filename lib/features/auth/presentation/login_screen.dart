@@ -1,11 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/router/route_names.dart';
 import '../../../core/theme/text_styles.dart';
-import '../../../core/widgets/custom_button.dart';
 import 'auth_cubit.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -130,28 +129,6 @@ class LoginScreen extends StatelessWidget {
                               AppStrings.signInWithGoogle,
                               style: AppTextStyles.labelLarge.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
                             ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    const Divider(color: AppColors.border),
-                    const SizedBox(height: 20),
-
-                    // Demo Mode Button (Instant Local Sandbox)
-                    CustomButton(
-                      text: AppStrings.orUseDemoMode,
-                      variant: ButtonVariant.outline,
-                      icon: Icons.play_circle_outline_rounded,
-                      isFullWidth: true,
-                      isLoading: isLoading,
-                      onPressed: () => context.read<AuthCubit>().signInDemoMode(),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      AppStrings.demoModeDescription,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
                     ),
                     const SizedBox(height: 24),
 
