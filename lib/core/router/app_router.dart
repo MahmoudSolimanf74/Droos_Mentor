@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/academic/presentation/academic_hub_screen.dart';
 import '../../features/auth/presentation/auth_cubit.dart';
@@ -15,6 +16,12 @@ import '../../features/students/presentation/student_details_screen.dart';
 import '../widgets/app_scaffold.dart';
 import 'route_names.dart';
 
+class _AuthRefreshListenable extends ChangeNotifier {
+  _AuthRefreshListenable(AuthCubit cubit) {
+    cubit.stream.listen((_) => notifyListeners());
+  }
+}
+
 class AppRouter {
   final AuthCubit authCubit;
 
@@ -22,7 +29,35 @@ class AppRouter {
 
   late final GoRouter router = GoRouter(
     initialLocation: '/splash',
+    refreshListenable: _AuthRefreshListenable(authCubit),
     errorBuilder: (context, state) => const SplashScreen(),
+    redirect: (context, state) {
+      final authState = authCubit.state;
+      final isLogin = state.matchedLocation == '/login';
+      final isSplash = state.matchedLocation == '/splash' ||
+          state.matchedLocation == '/' ||
+          state.matchedLocation == '/login-callback';
+
+      if (authState is AuthInitial || authState is AuthLoading) {
+        return null;
+      }
+
+      if (authState is Authenticated) {
+        if (isLogin || isSplash) {
+          return '/dashboard';
+        }
+      }
+
+      if (authState is Unauthenticated ||
+          authState is AuthRoleUnauthorized ||
+          authState is AuthError) {
+        if (!isLogin && !isSplash) {
+          return '/login';
+        }
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/',

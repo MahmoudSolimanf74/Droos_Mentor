@@ -90,6 +90,33 @@ class LoginScreen extends StatelessWidget {
                     const Divider(color: AppColors.border),
                     const SizedBox(height: 28),
 
+                    if (state is AuthError || state is AuthRoleUnauthorized) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.red.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.red.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline_rounded, color: AppColors.red, size: 20),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                state is AuthError ? state.message : (state as AuthRoleUnauthorized).message,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.red,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
                     // Google Sign-In Primary Button
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(

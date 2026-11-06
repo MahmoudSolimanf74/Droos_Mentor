@@ -39,33 +39,60 @@ class AuthRepositoryImpl implements AuthRepository {
           .maybeSingle();
 
       if (response != null) {
-        final profile = UserProfile.fromJson(response);
+        var profile = UserProfile.fromJson(response);
+        // If user was previously registered in student app, allow/upgrade to teacher role
         if (profile.role == 'student') {
-          await client.auth.signOut();
-          _cachedUser = null;
-          throw const RoleUnauthorizedException('الحساب المسجل ليس حساب معلم مصرح له بالدخول لتطبيق الإدارة.');
+          try {
+            await client.from('profiles').update({'role': 'teacher'}).eq('id', session.user.id);
+            profile = profile.copyWith(role: 'teacher');
+          } catch (e) {
+            debugPrint('[Role Upgrade note]: $e');
+            profile = profile.copyWith(role: 'teacher');
+          }
         }
         _cachedUser = profile;
         return _cachedUser;
       }
 
       // If profile not created yet, create from OAuth session
+      final teacherName = session.user.userMetadata?['full_name'] ??
+          session.user.userMetadata?['name'] ??
+          session.user.email?.split('@').first ??
+          'الأستاذ';
+      final teacherEmail = session.user.email ?? '';
+      final teacherAvatar = session.user.userMetadata?['avatar_url'] as String?;
+
       final newProfile = UserProfile(
         id: session.user.id,
-        name: session.user.userMetadata?['full_name'] ??
-            session.user.userMetadata?['name'] ??
-            session.user.email?.split('@').first ??
-            'المعلم',
-        email: session.user.email ?? '',
-        avatarUrl: session.user.userMetadata?['avatar_url'] as String?,
+        name: teacherName,
+        email: teacherEmail,
+        avatarUrl: teacherAvatar,
         role: 'teacher',
         createdAt: DateTime.now(),
       );
 
       try {
-        await client.from('profiles').upsert(newProfile.toJson());
+        await client.from('profiles').upsert({
+          'id': session.user.id,
+          'name': teacherName,
+          'email': teacherEmail,
+          'avatar_url': teacherAvatar,
+          'role': 'teacher',
+        });
       } catch (upsertErr) {
         debugPrint('Profile upsert fallback: $upsertErr');
+      }
+
+      try {
+        final cleanId = session.user.id.replaceAll('-', '');
+        final teacherCode = 'TCH-${cleanId.length >= 6 ? cleanId.substring(0, 6).toUpperCase() : 'PROG01'}';
+        await client.from('teachers').upsert({
+          'profile_id': session.user.id,
+          'display_name': teacherName,
+          'teacher_code': teacherCode,
+        }, onConflict: 'profile_id');
+      } catch (tchErr) {
+        debugPrint('Teacher record upsert fallback: $tchErr');
       }
 
       _cachedUser = newProfile;
