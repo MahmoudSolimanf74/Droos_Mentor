@@ -207,24 +207,30 @@ class StudentsCubit extends Cubit<StudentsState> {
   }
 
   Future<void> removeStudent(String studentId) async {
-    if (_currentGroupId == null) return;
-    try {
-      await _repository.removeStudentFromGroup(
-        groupId: _currentGroupId!,
-        studentId: studentId,
-      );
-      await loadStudents(_currentGroupId, _currentGradeId);
-    } catch (e) {
-      emit(StudentsError(e.toString()));
-    }
+    await deleteStudent(studentId);
   }
 
   Future<void> deleteStudent(String studentId) async {
+    // 1. Optimistic update: remove student from UI immediately
+    List<StudentModel>? previousList;
+    if (state is StudentsLoaded) {
+      final current = state as StudentsLoaded;
+      previousList = current.allStudents;
+      final updatedList = current.allStudents.where((s) => s.id != studentId).toList();
+      emit(current.copyWith(allStudents: updatedList));
+    }
+
     try {
       await _repository.deleteStudent(studentId);
+      // Synchronize with database
       await loadStudents(_currentGroupId, _currentGradeId);
     } catch (e) {
+      debugPrint('[StudentsCubit] deleteStudent error: $e');
+      if (previousList != null && state is StudentsLoaded) {
+        emit((state as StudentsLoaded).copyWith(allStudents: previousList));
+      }
       emit(StudentsError(e.toString()));
+      rethrow;
     }
   }
 }

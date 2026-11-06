@@ -406,6 +406,18 @@ class StudentsRepositoryImpl implements StudentsRepository {
     if (client == null) return;
 
     try {
+      // 1. Delete associated child records safely (in case DB lacks CASCADE)
+      try {
+        await client.from('attendance_records').delete().eq('student_id', studentId);
+      } catch (_) {}
+      try {
+        await client.from('homework_records').delete().eq('student_id', studentId);
+      } catch (_) {}
+      try {
+        await client.from('exam_attempts').delete().eq('student_id', studentId);
+      } catch (_) {}
+
+      // 2. Delete the student record itself
       await client.from('students').delete().eq('id', studentId);
     } catch (e) {
       debugPrint('[Supabase] removeStudent error: $e');

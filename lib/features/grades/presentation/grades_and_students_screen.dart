@@ -7,6 +7,7 @@ import '../../../core/theme/text_styles.dart';
 import '../../../core/utils/whatsapp_helper.dart';
 import '../../../core/widgets/responsive_layout.dart';
 import '../../../core/widgets/status_badge.dart';
+import '../../../core/widgets/confirmation_dialog.dart';
 import '../../students/domain/student_model.dart';
 import '../../students/presentation/student_details_screen.dart';
 import '../../students/presentation/students_cubit.dart';
@@ -583,8 +584,37 @@ class _GradesAndStudentsScreenState extends State<GradesAndStudentsScreen> {
                     IconButton(
                       icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.red),
                       tooltip: 'حذف الطالب',
-                      onPressed: () {
-                        context.read<StudentsCubit>().deleteStudent(s.id);
+                      onPressed: () async {
+                        final confirmed = await ConfirmationDialog.show(
+                          context,
+                          title: 'حذف الطالب من المجموعة',
+                          message: 'هل أنت متأكد من حذف الطالب "${s.name}" واستبعاده من هذه المجموعة؟',
+                          isDangerous: true,
+                          confirmText: 'حذف الطالب',
+                        );
+                        if (confirmed == true && context.mounted) {
+                          try {
+                            await context.read<StudentsCubit>().deleteStudent(s.id);
+                            if (context.mounted) {
+                              context.read<GradesCubit>().loadGrades();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('تم حذف الطالب "${s.name}" من المجموعة بنجاح'),
+                                  backgroundColor: AppColors.primary,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('تعذر حذف الطالب: $e'),
+                                  backgroundColor: AppColors.red,
+                                ),
+                              );
+                            }
+                          }
+                        }
                       },
                     ),
                     const Icon(Icons.chevron_left_rounded, color: AppColors.textSecondary, size: 20),
